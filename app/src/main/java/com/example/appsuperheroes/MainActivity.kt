@@ -5,7 +5,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,21 +16,48 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.AlignmentLine
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appsuperheroes.data.SuperHeroesRepository
@@ -67,82 +97,138 @@ fun contenido(
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
-        content = {
-            items(SuperHeroesRepository.superHeroesList) {
-                superHeroeItem(
-                    heroe = it,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp)
+        modifier = modifier
+            .fillMaxSize()
+    ) {
+        items(SuperHeroesRepository.superHeroesList) {
+            SuperHeroeCard(heroe = it)
+        }
+    }
+}
+
+@Composable
+fun SuperHeroeCard(heroe: Superheroe) {
+
+    var expanded by remember { mutableStateOf(false) }
+
+    val caracterArriba: String = "˄"
+    val caracterAbajo: String = "˅"
+
+    var iconoBoton  = caracterAbajo
+
+    if(expanded) iconoBoton = caracterArriba ?: caracterAbajo
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .background(color = if(expanded) Color.Magenta else Color.Cyan)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 16.dp)
+            ) {
+                infoHeroe(
+                    title = heroe.title,
+                    description = heroe.description
                 )
             }
-        },
-        modifier = modifier.fillMaxSize()
-    )
+
+            Button(
+                colors = ButtonDefaults.buttonColors(Color.Transparent),
+                onClick = { expanded = !expanded },
+                enabled = true
+            ) {
+
+            Text(
+                text = iconoBoton,
+                color = Color.Black,
+                fontSize = 40.sp
+            )
+            }
+
+            iconoHeroe(imaxeId = heroe.imaxeId)
+
+        }
+        if (expanded) {
+            extraHeroe(extra = heroe.extra)
+        }
+
+
+    }
 }
 
 @Composable
-fun superHeroeItem(
-    heroe: Superheroe,
-    modifier: Modifier = Modifier
+fun extraHeroe(
+    @StringRes extra: Int
 ) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Column (
+        ){
+            Text(
+                text = "About:",
+                fontStyle = FontStyle.Normal,
+                fontFamily = FontFamily.Default,
+                fontSize = 15.sp
+            )
+            Text(
+                text = stringResource(id = extra)
+            )
+        }
 
-   Card(
-       modifier = modifier.fillMaxWidth()
-   ) {
-       textoHeroe(
-           texto = heroe.nome,
-           tamanhoLetra = 15
-       )
-       imaxeHeroe(
-           heroe.imaxeId,
-           modifier = Modifier
-               .align(alignment = Alignment.End)
-               .size(100.dp)
-       )
-
-       Spacer(modifier = Modifier.height(10.dp))
-
-       textoHeroe(
-           texto = R.string.extra
-       )
-
-       textoHeroe(
-           texto = heroe.about
-       )
-   }
-
+    }
 
 }
 
 @Composable
-fun imaxeHeroe(
+fun iconoHeroe(
     @DrawableRes imaxeId: Int,
     modifier: Modifier = Modifier
 ) {
     Image(
-        painterResource(id = imaxeId),
+        painter = painterResource(id = imaxeId),
         contentDescription = null,
         modifier = modifier
+            .size(80.dp, 80.dp)
+            .clip(MaterialTheme.shapes.medium),
+        contentScale = ContentScale.Crop
     )
-
 }
 
 @Composable
-fun textoHeroe(
-    @StringRes texto: Int,
-    tamanhoLetra: Int = 10,
+fun infoHeroe(
+    @StringRes title: Int,
+    @StringRes description: Int,
     modifier: Modifier = Modifier
 ) {
 
-    Text(
-        text = stringResource(id = texto),
-        fontSize = tamanhoLetra.sp,
-        modifier = modifier,
+    Column(
+        modifier = modifier
+    ) {
+        Text(
+            text = stringResource(id = title),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
         )
+        Text(
+            text = stringResource(id = description),
+            style = MaterialTheme.typography.titleMedium
+        )
+    }
+
 
 }
-
 
 @Preview(showBackground = true)
 @Composable

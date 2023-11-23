@@ -5,6 +5,7 @@ import androidx.annotation.StringRes
 
 data class Superheroe (
     @DrawableRes val imaxeId: Int,
-    @StringRes val nome: Int,
-    val about: Int
+    @StringRes val title: Int,
+    @StringRes val description: Int,
+    @StringRes val extra: Int,
 )
