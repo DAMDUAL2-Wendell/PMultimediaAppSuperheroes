@@ -3,5 +3,7 @@
     <dimen name="spacer_small">10dp</dimen>
     <dimen name="padding_small">8dp</dimen>
     <dimen name="padding_medium">16dp</dimen>
-    <dimen name="image_size">64dp</dimen>
+    <dimen name="image_size">100dp</dimen>
+    <dimen name="logo_size">70dp</dimen>
+    <dimen name="texto_titulo">16</dimen>
 </resources>
